@@ -1,0 +1,6 @@
+[package]
+name = "pedeef-read"
+version = "0.1.0"
+authors = ["Oleg Arshinskii <velet5@ya.ru>"]
+
+[dependencies]
