@@ -1,11 +1,12 @@
-mod reader;
+mod simple;
 mod xref;
+mod token;
 
 use xref::Xref;
 use xref::XrefParser;
 
 // replace with full file name
-const FILE_NAME: &str = "getting-real.pdf";
+const FILE_NAME: &str = "/home/oarshinskii/getting-real.pdf";
 
 
 fn main() {

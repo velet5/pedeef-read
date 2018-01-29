@@ -1,8 +1,10 @@
 use std;
 
-use reader::BackwardReader;
-use reader::Reader;
-use reader::ReaderResult;
+use simple::BackwardReader;
+use simple::Reader;
+use token::TokenReader;
+use simple::ReaderResult;
+
 
 pub struct XrefParser {
   reader: BackwardReader
@@ -21,8 +23,14 @@ impl XrefParser {
 
 
   pub fn parse(&mut self) -> ReaderResult<Xref> {
-    self.reader.skip_whitespace();
-    self.reader.read_exact("%%EOF")?;
+    let mut reader = &mut self.reader;
+    reader.skip_whitespace();
+    reader.read_exact("%%EOF")?;
+    reader.skip_whitespace();
+
+    let position = reader.read_int()?;
+
+    println!("{}", position);
 
     Ok(Xref {})
   }
