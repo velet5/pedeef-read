@@ -1,25 +1,24 @@
 use std;
 
 use simple::Reader;
-use token::TokenReader;
 use simple::ReaderResult;
 
 
 pub struct XrefParser {
-  reader: Reader
+  pub reader: Reader
 }
 
 
 #[derive(Debug)]
 pub struct XrefEntry {
-  position: i32,
-  generation: i32,
-  is_used: bool
+  pub offset: usize,
+  pub generation: i32,
+  pub is_used: bool
 }
 
 
 pub struct Xref {
-  entries: Vec<XrefEntry>
+  pub entries: Vec<XrefEntry>
 }
 
 
@@ -41,7 +40,8 @@ impl XrefParser {
   fn parse_table(&mut self, position: u32) -> ReaderResult<Vec<XrefEntry>> {
     self.reader.set_simple(true);
     self.reader.set_position(position as usize);
-    self.reader.read_exact("xref");
+        
+    self.reader.read_exact("xref")?;
     self.reader.skip_whitespace();
 
     let number = self.reader.read_int()?;
@@ -70,7 +70,7 @@ impl XrefParser {
     self.reader.skip_whitespace();
 
     Ok(XrefEntry {
-      position: offset,
+      offset: offset as usize,
       generation,
       is_used: mark == 'n'
     })

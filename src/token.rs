@@ -62,7 +62,6 @@ impl Reader {
   }
 
 
-
   fn process_string(&self, string: String) -> String {
     if self.simple {
       string
@@ -80,7 +79,15 @@ impl Reader {
 
 
   pub fn read_exact(&mut self, what: &str) -> ReaderResult<()> {
-    let read = self.read_non_whitespace()?;
+    let mut buffer = String::new();
+
+    for _ in 0 .. what.len() {
+      let ch = self.next_char()?;
+      buffer.push(ch);
+    }
+
+    let read = self.process_string(buffer);
+
     let what_chars = what.chars();
     let read_chars = read.chars();
 
@@ -127,11 +134,4 @@ impl Reader {
       Err(err) => Err(format!("Error reading number: {}, at position {}", string, self.position()))
     }
   }
-}
-
-pub trait TokenReader {
-
-
-
-
 }
