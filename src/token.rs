@@ -37,11 +37,21 @@ fn is_digit(byte: u8) -> bool {
 }
 
 
-impl <T> TokenReader for T where T : Reader { }
+fn reverse_string(string: String) -> String {
+  let mut buffer = String::new();
 
-pub trait TokenReader : Reader {
+  for ch in string.chars().rev() {
+    buffer.push(ch)
+  }
 
-  fn next_char(&mut self) -> ReaderResult<char> {
+  buffer
+
+}
+
+
+
+impl Reader {
+  pub fn next_char(&mut self) -> ReaderResult<char> {
     let next_byte = self.next();
     let maybe_char = std::char::from_u32(next_byte as u32);
 
@@ -52,14 +62,24 @@ pub trait TokenReader : Reader {
   }
 
 
-  fn skip_whitespace(&mut self) -> () {
+
+  fn process_string(&self, string: String) -> String {
+    if self.simple {
+      string
+    } else {
+      reverse_string(string)
+    }
+  }
+
+
+  pub fn skip_whitespace(&mut self) -> () {
     while is_whitespace(self.peek()) {
       self.move_cursor()
     }
   }
 
 
-  fn read_exact(&mut self, what: &str) -> ReaderResult<()> {
+  pub fn read_exact(&mut self, what: &str) -> ReaderResult<()> {
     let read = self.read_non_whitespace()?;
     let what_chars = what.chars();
     let read_chars = read.chars();
@@ -95,18 +115,23 @@ pub trait TokenReader : Reader {
   }
 
 
-  fn read_non_whitespace(&mut self) -> ReaderResult<String> {
+  pub fn read_non_whitespace(&mut self) -> ReaderResult<String> {
     self.read_with_predicate(&non_whitespace)
   }
 
 
-  fn read_int(&mut self) -> ReaderResult<i32> {
+  pub fn read_int(&mut self) -> ReaderResult<i32> {
     let string = self.read_with_predicate(&is_digit)?;
     match string.parse() {
       Ok(integer) => Ok(integer),
       Err(err) => Err(format!("Error reading number: {}, at position {}", string, self.position()))
     }
   }
+}
+
+pub trait TokenReader {
+
+
 
 
 }
