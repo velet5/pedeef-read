@@ -5,15 +5,30 @@ use xref::*;
 use std::collections::HashMap;
 
 
-pub struct IndirectObject(i32, i32, Object);
+const LESS_THAN: u8 = '<' as u8;
+const F: u8 = 'f' as u8;
+const N: u8 = 'n' as u8;
+const T: u8 = 't' as u8;
 
+
+#[derive(Debug)]
+pub struct IndirectObject(pub i32, pub i32, pub Object);
+
+
+#[derive(Debug)]
 pub enum Object {
   Null,
   Boolean(bool),
   Real(f32),
   Integer(i32),
   String(String),
-  Dictionary(HashMap<String, Object>)
+  Dictionary(HashMap<String, Object>),
+  Reference(i32, i32)
+}
+
+
+pub trait ToObject {
+  fn to_object(&self) -> Object;
 }
 
 
@@ -24,6 +39,10 @@ impl Reader {
     let xref = parser.parse()?;
 
     let mut reader = parser.reader;
+
+    let trailer = reader.read_trailer()?;
+
+    println!("trailer: {:?}", trailer);
 
     reader.read_objects(xref)
   }
@@ -66,7 +85,65 @@ impl Reader {
     self.read_exact("obj")?;
     self.skip_whitespace();
 
-    unimplemented!();
+    let object = self.read_object()?;
+
+    Ok(IndirectObject(id, generation, object))
+  }
+
+
+  fn read_object(&mut self) -> ReaderResult<Object> {
+    let peek = self.peek();
+
+    match peek {
+      F => self.read_false(),
+      N => self.read_null(),
+      T => self.read_true(),
+      other if ZERO <= other && other <= NINE => self.read_integer(),
+      _ => self.default(),
+    }
+  }
+
+
+  fn read_integer(&mut self) -> ReaderResult<Object> {
+    let value = self.read_int()?;
+
+    Ok(Object::Integer(value))
+  }
+
+
+  fn read_null(&mut self) -> ReaderResult<Object> {
+    self.read_exact("null")?;
+    self.skip_whitespace();
+
+    Ok(Object::Null)
+  }
+
+
+  fn read_true(&mut self) -> ReaderResult<Object> {
+    self.read_exact("true")?;
+    self.skip_whitespace();
+
+    Ok(Object::Boolean(true))
+  }
+
+
+  fn read_false(&mut self) -> ReaderResult<Object> {
+    self.read_exact("false")?;
+    self.skip_whitespace();
+
+    Ok(Object::Boolean(false))
+  }
+
+
+  fn read_reference_object(&mut self) -> ReaderResult<Object> {
+    let reference = self.read_reference()?;
+
+    Ok(reference.to_object())
+  }
+  
+
+  fn default(&mut self) -> ReaderResult<Object> {
+    Ok(Object::Integer(777))
   }
 
 }

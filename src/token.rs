@@ -8,8 +8,8 @@ const LINE_FEED: u8 = 10;
 const FORM_FEED: u8 = 12;
 const CARRIAGE_RETURN: u8 = 13;
 const SPACE: u8 = 32;
-const ZERO: u8 = '0' as u8;
-const NINE: u8 = '9' as u8;
+pub const ZERO: u8 = '0' as u8;
+pub const NINE: u8 = '9' as u8;
 
 
 fn is_whitespace(byte: u8) -> bool {
@@ -108,7 +108,7 @@ impl Reader {
   }
 
 
-  fn read_with_predicate(&mut self, predicate: &Fn(u8) -> bool) -> ReaderResult<String> {
+  pub fn read_with_predicate(&mut self, predicate: &Fn(u8) -> bool) -> ReaderResult<String> {
     let mut buffer = String::new();
 
     while predicate(self.peek()) {
