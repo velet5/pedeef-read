@@ -5,6 +5,7 @@ use object::Object;
 use object::reference::*;
 use object::name::*;
 use object::integer::*;
+use object::string::*;
 use reader::stream::Stream;
 use reader::result::ReadResult;
 use reader::error::ReadError;
@@ -25,15 +26,47 @@ pub fn read_trailer(stream: &mut Stream)  -> ReadResult<Trailer> {
   let mut trailer_map: HashMap<&str, &Fn(&mut Stream) -> ReadResult<Object>> = HashMap::new();
 
   trailer_map.insert("Size", &read_integer);
+  trailer_map.insert("Prev", &read_integer);
   trailer_map.insert("Root", &read_reference_object);
   trailer_map.insert("Info", &read_reference_object);
+  trailer_map.insert("ID", &read_id_array);
 
   skip(stream, "trailer")?;
   skip_whitespace(stream);
 
-  let dictionary = read_dictionary(stream, &trailer_map)?;
+  let mut dictionary = &mut read_dictionary(stream, &trailer_map)?;
 
-  println!("{:?}", dictionary);
+  fn unfold<T>(name: &str,
+               map: &mut HashMap<String, Object>,
+               extractor: &Fn(Object) -> Option<T>) -> ReadResult<T> {
+    match map.remove(name).and_then(extractor) {
+      Some(value) => Ok(value),
+      None => return Err(ReadError {
+        message: format!("Not found dictionary key {} while reading trailer.", name)
+      })
+    }
+  }
+  
+  Ok(Trailer {
+    size: unfold("Size", dictionary, &to_int)?,
+    root: unfold("Root", dictionary, &to_reference)?,
+    info: unfold("Info", dictionary, &to_reference)?
+  })
+}
 
-  unimplemented!()
+
+fn read_id_array(stream: &mut Stream) -> ReadResult<Object> {
+  skip(stream, "[")?;
+  skip_whitespace(stream);
+
+  let first = read_byte_string_object(stream)?;
+  skip_whitespace(stream);
+
+  let second = read_byte_string_object(stream)?;
+  skip_whitespace(stream);
+
+  skip(stream, "]");
+  skip_whitespace(stream);
+
+  Ok(Object::Array(vec!(first, second)))
 }

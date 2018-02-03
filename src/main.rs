@@ -40,7 +40,8 @@ fn read_from_stream(stream: &mut Stream) -> ReadResult<()> {
   let xref = document::xref::read_xref(stream)?;
   let trailer = document::trailer::read_trailer(stream)?;
   
-  println!("{:?}, {:?}", xref, trailer);
+  println!("{:?}", xref);
+  println!("{:?}", trailer);
 
   Ok(())
 }

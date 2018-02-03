@@ -9,3 +9,11 @@ pub fn read_integer(stream: &mut Stream) -> ReadResult<Object> {
 
   Ok(Object::Integer(number))
 }
+
+
+pub fn to_int(object: Object) -> Option<i32> {
+  match object {
+    Object::Integer(value) => Some(value),
+    _ => None
+  }
+}

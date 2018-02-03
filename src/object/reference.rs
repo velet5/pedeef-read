@@ -20,3 +20,11 @@ pub fn read_reference_object(stream: &mut Stream) -> ReadResult<Object> {
 
   Ok(Object::Reference(reference))
 }
+
+
+pub fn to_reference(object: Object) -> Option<Reference> {
+  match object {
+    Object::Reference(value) => Some(value),
+    _ => None
+  }
+}

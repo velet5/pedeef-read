@@ -21,7 +21,7 @@ pub fn read_dictionary(
     match stream.peek() {
       SOLIDUS => {
         let name = read_name_string(stream)?;
-        skip_space(stream)?;
+        skip_whitespace(stream);
         match map.get(name.as_str()) {
           Some(parser) => {
             let object = parser(stream)?;

@@ -1,11 +1,12 @@
 pub mod integer;
 pub mod name;
 pub mod reference;
+pub mod string;
 
 use std::collections::HashMap;
 
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub struct Reference {
   id: i32,
   generation: i32
@@ -28,6 +29,7 @@ pub enum Object {
   Integer(i32),
   String(String),
   Name(String),
+  Array(Vec<Object>),
   Dictionary(HashMap<String, Object>),
   Reference(Reference)
 }
