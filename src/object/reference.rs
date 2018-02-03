@@ -2,13 +2,21 @@ use reader::stream::Stream;
 use reader::result::ReadResult;
 use object::Reference;
 use reader::common::*;
+use object::Object;
 
 
-fn read_reference(stream: &mut Stream) -> ReadResult<Reference> {
+pub fn read_reference(stream: &mut Stream) -> ReadResult<Reference> {
   let id = read_int(stream)?;
   skip(stream, " ")?;
   let generation = read_int(stream)?;
   skip(stream, " R")?;
 
   Ok(Reference { id, generation })
+}
+
+
+pub fn read_reference_object(stream: &mut Stream) -> ReadResult<Object> {
+  let reference = read_reference(stream)?;
+
+  Ok(Object::Reference(reference))
 }

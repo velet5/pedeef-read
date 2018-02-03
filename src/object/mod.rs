@@ -1,5 +1,6 @@
-mod integer;
-mod reference;
+pub mod integer;
+pub mod name;
+pub mod reference;
 
 use std::collections::HashMap;
 

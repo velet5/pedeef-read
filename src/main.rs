@@ -21,15 +21,26 @@ fn main() {
 
 
 fn read_file(file_name: &str) -> () {
+
   match Stream::from_file(file_name) {
-    Ok(mut stream) => read_from_stream(&mut stream),
-    Err(err) => println!("{}", err.to_string())
+    Ok(mut stream) => {
+      let result = read_from_stream(&mut stream);
+      match result {
+        Ok(_) =>  { /* ignore */ },
+        Err(err) => println!("Error: {:?}", err)
+      }
+    },
+
+    Err(err) => println!("{:?}", err.to_string())
   }
 }
 
 
-fn read_from_stream(stream: &mut Stream) -> () {
-  let xref = document::xref::read_xref(stream);
+fn read_from_stream(stream: &mut Stream) -> ReadResult<()> {
+  let xref = document::xref::read_xref(stream)?;
+  let trailer = document::trailer::read_trailer(stream)?;
+  
+  println!("{:?}, {:?}", xref, trailer);
 
-  println!("{:?}", xref);
+  Ok(())
 }
