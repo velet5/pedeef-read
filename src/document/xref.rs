@@ -5,7 +5,6 @@ use reader::result::ReadResult;
 use reader::error::ReadError;
 use reader::common::*;
 use reader::characters::*;
-use std::iter::Map;
 
 
 #[derive(Debug)]

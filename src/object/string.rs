@@ -5,9 +5,9 @@ use reader::common::*;
 
 
 pub fn read_byte_string(stream: &mut Stream) -> ReadResult<String> {
-  skip(stream, "<");
+  skip(stream, "<")?;
   let value = read_regular_string(stream);
-  skip(stream, ">");
+  skip(stream, ">")?;
 
   Ok(value)
 }

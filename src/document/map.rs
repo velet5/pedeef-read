@@ -9,7 +9,7 @@ use reader::stream::Stream;
 
 #[derive(Debug)]
 pub struct ObjectMap {
-  value: HashMap<Reference, usize>
+  pub value: HashMap<Reference, usize>
 }
 
 
@@ -27,7 +27,7 @@ pub fn read_object_map(stream: &mut Stream, xref: &XrefTable) -> ReadResult<Obje
 }
 
 
-fn read_object_id(stream: &mut Stream, position: usize) -> ReadResult<Reference> {
+pub fn read_object_id(stream: &mut Stream, position: usize) -> ReadResult<Reference> {
   stream.set_forward_mode();
   stream.set_position(position);
 

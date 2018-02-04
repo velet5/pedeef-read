@@ -1,3 +1,4 @@
+use std::any::Any;
 use std::collections::HashMap;
 
 use reader::characters::*;
@@ -11,7 +12,7 @@ use object::name::*;
 
 pub fn read_dictionary(
   stream: &mut Stream,
-  map: &HashMap<&str, &Fn(&mut Stream) -> ReadResult<Object>>) -> ReadResult<HashMap<String, Object>> {
+  map: &HashMap<&str, &Fn(&mut Stream) -> ReadResult<Box<Any>>>) -> ReadResult<HashMap<String, Box<Any>>> {
 
   let mut buffer = HashMap::new();
 
@@ -45,11 +46,7 @@ pub fn read_dictionary(
 }
 
 
-pub fn unfold<T>(
-  name: &str,
-  map: &mut HashMap<String, Object>,
-  extractor: &Fn(Object) -> Option<T>) -> ReadResult<T> {
-
+pub fn unfold<T: 'static>(name: &str, map: &mut HashMap<String, Box<Any>>) -> ReadResult<Box<T>> {
   let maybe_value = map.remove(name);
 
   match maybe_value {
@@ -57,15 +54,12 @@ pub fn unfold<T>(
       return Err(ReadError {
         message: format!("Not found dictionary key {} while reading trailer.", name)
       }),
-    _ => ()
-  }
-
-  let maybe_extracted = maybe_value.and_then(extractor);
-
-  match maybe_extracted {
-    Some(value) => Ok(value),
-    None => return Err(ReadError {
-      message: format!("Not found dictionary key {} while reading trailer.", name)
-    })
+    Some(value) => {
+      value
+        .downcast::<T>()
+        .map_err(|_| ReadError {
+          message: format!("Wrong type for {}.", name)
+        })
+    }
   }
 }
