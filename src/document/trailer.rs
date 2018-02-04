@@ -34,18 +34,7 @@ pub fn read_trailer(stream: &mut Stream)  -> ReadResult<Trailer> {
   skip(stream, "trailer")?;
   skip_whitespace(stream);
 
-  let mut dictionary = &mut read_dictionary(stream, &trailer_map)?;
-
-  fn unfold<T>(name: &str,
-               map: &mut HashMap<String, Object>,
-               extractor: &Fn(Object) -> Option<T>) -> ReadResult<T> {
-    match map.remove(name).and_then(extractor) {
-      Some(value) => Ok(value),
-      None => return Err(ReadError {
-        message: format!("Not found dictionary key {} while reading trailer.", name)
-      })
-    }
-  }
+  let dictionary = &mut read_dictionary(stream, &trailer_map)?;
   
   Ok(Trailer {
     size: unfold("Size", dictionary, &to_int)?,

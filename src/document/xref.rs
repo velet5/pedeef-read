@@ -10,16 +10,16 @@ use std::iter::Map;
 
 #[derive(Debug)]
 pub struct XrefEntry {
-  offset: usize,
+  pub offset: usize,
   generation: i32,
-  is_used: bool
+  pub is_used: bool
 }
 
 
 #[derive(Debug)]
 pub struct XrefTable {
   version: i32,
-  entries: Vec<XrefEntry>
+  pub entries: Vec<XrefEntry>
 }
 
 

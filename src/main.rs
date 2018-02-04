@@ -6,7 +6,6 @@ use reader::stream::Stream;
 use reader::result::ReadResult;
 
 
-
 fn main() {
 
   read_file("/home/oarshinskii/getting-real.pdf");
@@ -39,9 +38,11 @@ fn read_file(file_name: &str) -> () {
 fn read_from_stream(stream: &mut Stream) -> ReadResult<()> {
   let xref = document::xref::read_xref(stream)?;
   let trailer = document::trailer::read_trailer(stream)?;
+  let object_map = document::map::read_object_map(stream, &xref)?;
   
   println!("{:?}", xref);
   println!("{:?}", trailer);
+  println!("{:?}", object_map);
 
   Ok(())
 }

@@ -43,3 +43,29 @@ pub fn read_dictionary(
 
   Ok(buffer)
 }
+
+
+pub fn unfold<T>(
+  name: &str,
+  map: &mut HashMap<String, Object>,
+  extractor: &Fn(Object) -> Option<T>) -> ReadResult<T> {
+
+  let maybe_value = map.remove(name);
+
+  match maybe_value {
+    None =>
+      return Err(ReadError {
+        message: format!("Not found dictionary key {} while reading trailer.", name)
+      }),
+    _ => ()
+  }
+
+  let maybe_extracted = maybe_value.and_then(extractor);
+
+  match maybe_extracted {
+    Some(value) => Ok(value),
+    None => return Err(ReadError {
+      message: format!("Not found dictionary key {} while reading trailer.", name)
+    })
+  }
+}

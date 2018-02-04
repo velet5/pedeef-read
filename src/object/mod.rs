@@ -6,10 +6,10 @@ pub mod string;
 use std::collections::HashMap;
 
 
-#[derive(Eq, PartialEq, Debug, Clone)]
+#[derive(Eq, Hash, PartialEq, Debug)]
 pub struct Reference {
-  id: i32,
-  generation: i32
+  pub id: i32,
+  pub generation: i32
 }
 
 
