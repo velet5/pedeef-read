@@ -11,6 +11,7 @@ use reader::result::ReadResult;
 use reader::common::*;
 use document::dictionary::*;
 use document::boxed::*;
+use document::reader::DocumentReader;
 
 
 #[derive(Debug)]
@@ -21,8 +22,10 @@ pub struct Trailer {
 }
 
 
-pub fn read_trailer(stream: &mut Stream)  -> ReadResult<Trailer> {
-  let mut trailer_map: HashMap<&str, &Fn(&mut Stream) -> ReadResult<Box<Any>>> = HashMap::new();
+pub fn read_trailer(reader: &mut DocumentReader)  -> ReadResult<Trailer> {
+
+  let mut trailer_map: HashMap<&str, &Fn(&mut DocumentReader) -> ReadResult<Box<Any>>> = HashMap::new();
+
 
   trailer_map.insert("Size", &read_int_boxed);
   trailer_map.insert("Prev", &read_int_boxed);
@@ -30,10 +33,14 @@ pub fn read_trailer(stream: &mut Stream)  -> ReadResult<Trailer> {
   trailer_map.insert("Info", &read_reference_boxed);
   trailer_map.insert("ID", &read_id_array);
 
-  skip(stream, "trailer")?;
-  skip_whitespace(stream);
+  {
+    let stream = &mut reader.stream;
+    stream.set_forward_mode();
+    skip(stream, "trailer")?;
+    skip_whitespace(stream);
+  }
 
-  let dictionary = &mut read_dictionary(stream, &trailer_map)?;
+  let dictionary = &mut read_dictionary(reader, &trailer_map)?;
 
   let size = unfold::<i32>("Size", dictionary)?;
   let root = unfold::<Reference>("Root", dictionary)?;
@@ -47,7 +54,9 @@ pub fn read_trailer(stream: &mut Stream)  -> ReadResult<Trailer> {
 }
 
                                                                                    
-fn read_id_array(stream: &mut Stream) -> ReadResult<Box<Any>> {
+fn read_id_array(reader: &mut DocumentReader) -> ReadResult<Box<Any>> {
+  let stream = &mut reader.stream;
+
   skip(stream, "[")?;
   skip_whitespace(stream);
 

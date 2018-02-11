@@ -2,8 +2,11 @@ mod reader;
 mod object;
 mod document;
 
+use document::reader::DocumentReader;
+
 use reader::stream::Stream;
 use reader::result::ReadResult;
+
 
 
 fn main() {
@@ -21,7 +24,7 @@ fn read_file(file_name: &str) -> () {
 
   match Stream::from_file(file_name) {
     Ok(mut stream) => {
-      let result = read_from_stream(&mut stream);
+      let result = read_from_stream(stream);
       match result {
         Ok(_) =>  { /* ignore */ },
         Err(err) => println!("Error: {:?}", err)
@@ -33,17 +36,23 @@ fn read_file(file_name: &str) -> () {
 }
 
 
-fn read_from_stream(stream: &mut Stream) -> ReadResult<()> {
-  let xref = document::xref::read_xref(stream)?;
+fn read_from_stream(s: Stream) -> ReadResult<()> {
+  let mut stream = s;
+
+  let xref = document::xref::read_xref(&mut stream)?;
+  let position = stream.position();
   println!("{:?}", xref);
 
-  let trailer = document::trailer::read_trailer(stream)?;
-  println!("{:?}", trailer);
-
-  let object_map = document::map::read_object_map(stream, &xref)?;
+  let object_map = document::map::read_object_map(&mut stream, &xref)?;
   println!("{:?}", object_map);
 
-  let root = document::root::read_root(stream, &trailer.root, &object_map)?;
+  stream.set_position(position);
+  let mut reader = DocumentReader {stream, map: object_map};
+
+  let trailer = document::trailer::read_trailer(&mut reader)?;
+  println!("{:?}", trailer);
+
+  let root = document::root::read_root(&mut reader, &trailer.root)?;
   println!("{:?}", root);
 
   Ok(())

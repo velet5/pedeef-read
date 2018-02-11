@@ -10,6 +10,10 @@ use reader::result::ReadResult;
 use document::map::*;
 use document::boxed::*;
 use document::dictionary::*;
+use document::reader::*;
+use document::referenced::*;
+use document::number_tree::*;
+use document::viewer_preferences::*;
 
 use object::Reference;
 use object::Object;
@@ -18,24 +22,30 @@ use object::reference::*;
 
 
 #[derive(Debug)]
-pub struct DocumentCatalog;
+pub struct DocumentCatalog {
+  tpe: String,
+  version: Option<String>,
+  page_labels: Option<NumberTree>,
+  page_layout: Option<String>,
+  page_mode: Option<String>,
+  pages: Reference,
+  viewer_preferences: Option<ViewerPreferences>
+}
 
 
 pub struct PageLabels;
 
 
-pub fn read_root(
-  stream: &mut Stream,
-  reference: &Reference,
-  object_map: &ObjectMap) -> ReadResult<DocumentCatalog> {
-  stream.set_forward_mode();
+pub fn read_root(reader: &mut DocumentReader, reference: &Reference) -> ReadResult<DocumentCatalog> {
+  {
+    let stream = &mut reader.stream;
+    stream.set_forward_mode();
+    let offset = reader.map.value.get(reference).unwrap();
+    let _ignored = read_object_id(stream, *offset)?;
+    skip_whitespace(stream);
+  }
 
-  let offset = object_map.value.get(reference).unwrap();
-  let _ignored = read_object_id(stream, *offset)?;
-  
-  skip_whitespace(stream);
-
-  let mut map: HashMap<&str, &Fn(&mut Stream) -> ReadResult<Box<Any>>> = HashMap::new();
+  let mut map: HashMap<&str, &Fn(&mut DocumentReader) -> ReadResult<Box<Any>>> = HashMap::new();
 
   map.insert("Type", &read_name_boxed);
   map.insert("Version", &read_name_boxed);
@@ -43,15 +53,34 @@ pub fn read_root(
   map.insert("PageLayout", &read_name_boxed);
   map.insert("PageMode", &read_name_boxed);
   map.insert("Pages", &read_reference_boxed);
+  map.insert("ViewerPreferences", &read_viewer_preferences_boxed);
 
- let dictionary = read_dictionary(stream, &map)?;
-  
-  unimplemented!()
+  let dictionary = &mut read_dictionary(reader, &map)?;
+
+  let tpe = *unfold("Type", dictionary)?;
+  let version = *unfold_optional("Version", dictionary)?;
+  let page_labels = *unfold_optional("PageLabels", dictionary)?;
+  let page_layout = *unfold_optional("PageLayout", dictionary)?;
+  let page_mode = *unfold_optional("PageMode", dictionary)?;
+  let pages = *unfold("Pages", dictionary)?;
+  let viewer_preferences = *unfold_optional("ViewerPreferences", dictionary)?;
+
+  Ok(DocumentCatalog {
+    tpe,
+    version,
+    page_labels,
+    page_layout,
+    page_mode,
+    pages,
+    viewer_preferences
+  })
 }
 
 
-fn read_page_labels(stream: &mut Stream) -> ReadResult<Box<Any>> {
-  skip_whitespace(stream);
+fn read_page_labels(reader: &mut DocumentReader) -> ReadResult<Box<Any>> {
+  skip_whitespace(&mut reader.stream);
 
-  unimplemented!()
+  let number_tree = read_unfold_reference(reader, &read_number_tree)?;
+
+  Ok(Box::new(number_tree))
 }

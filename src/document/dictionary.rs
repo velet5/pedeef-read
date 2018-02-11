@@ -9,35 +9,37 @@ use reader::result::ReadResult;
 use object::Object;
 use object::name::*;
 
+use document::reader::DocumentReader;
+
 
 pub fn read_dictionary(
-  stream: &mut Stream,
-  map: &HashMap<&str, &Fn(&mut Stream) -> ReadResult<Box<Any>>>) -> ReadResult<HashMap<String, Box<Any>>> {
+  reader: &mut DocumentReader,
+  map: &HashMap<&str, &Fn(&mut DocumentReader) -> ReadResult<Box<Any>>>) -> ReadResult<HashMap<String, Box<Any>>> {
 
   let mut buffer = HashMap::new();
 
-  skip(stream, "<<")?;
+  skip(&mut reader.stream, "<<")?;
 
   loop {
-    match stream.peek() {
+    match reader.stream.peek() {
       SOLIDUS => {
-        let name = read_name_string(stream)?;
-        skip_whitespace(stream);
+        let name = read_name_string(&mut reader.stream)?;
+        skip_whitespace(&mut reader.stream);
         match map.get(name.as_str()) {
           Some(parser) => {
-            let object = parser(stream)?;
+            let object = parser(reader)?;
             buffer.insert(name, object);
           },
           None =>
             return Err(ReadError {
-              message: format!("Unknown name in dictionary: {}. Position: {}", name, stream.position())
+              message: format!("Unknown name in dictionary: {}. Position: {}", name, &reader.stream.position())
             })
         }
       },
       GREATER_THAN => break,
-      other if is_whitespace(other) => skip_whitespace(stream),
+      other if is_whitespace(other) => skip_whitespace(&mut reader.stream),
       unknown => return Err(ReadError {
-        message: format!("Unknown character in trailer: {}. Position: {}", unknown, stream.position())
+        message: format!("Unknown character in trailer: {}. Position: {}", unknown, &reader.stream.position())
       })
     }
   }
@@ -62,4 +64,17 @@ pub fn unfold<T: 'static>(name: &str, map: &mut HashMap<String, Box<Any>>) -> Re
         })
     }
   }
+}
+
+
+pub fn unfold_optional<T: 'static>(
+  name: &str,
+  map: &mut HashMap<String, Box<Any>>) -> ReadResult<Box<Option<T>>> {
+
+  if map.contains_key(name) {
+    Ok(Box::new(Some(*unfold(name, map)?)))
+  } else {
+    Ok(Box::new(None))
+  }
+
 }

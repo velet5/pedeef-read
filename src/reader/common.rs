@@ -4,6 +4,9 @@ use reader::result::ReadResult;
 use std::num::ParseIntError;
 use reader::error::ReadError;
 
+const F: u8 = 'f' as u8;
+const T: u8 = 't' as u8;
+
 
 pub fn read_with_predicate(stream: &mut Stream, predicate: &Fn(u8) -> bool) -> String {
   let mut buffer = String::new();
@@ -25,6 +28,26 @@ pub fn read_char(stream: &mut Stream) -> char {
 
 pub fn read_regular_string(stream: &mut Stream) -> String {
   read_with_predicate(stream, &is_regular)
+}
+
+
+pub fn read_bool(stream: &mut Stream) -> ReadResult<bool> {
+  match stream.peek() {
+    T => {
+      skip(stream, "true")?;
+      Ok(true)
+    },
+    F => {
+      skip(stream, "false")?;
+      Ok(false)
+    },
+    other =>
+      Err(ReadError {message:
+        format!(
+          "Unknown number tree value starting: {}. Position: {}",
+          stream.peek(), stream.position())})
+
+  }
 }
 
 

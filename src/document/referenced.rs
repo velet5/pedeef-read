@@ -1,45 +1,44 @@
+use document::reader::DocumentReader;
+
 use reader::stream::Stream;
 use reader::result::ReadResult;
 use reader::common::*;
+use document::*;
+use object::reference::*;
+use document::map::*;
 
 
 pub fn read_unfold_reference<T>(
-  stream: &mut Stream,
-  reader: &Fn(&mut Stream) -> ReadResult<T>) -> ReadResult<T> {
-  if is_reference_ahead(stream) {
-    unimplemented!()
+  reader: &mut DocumentReader,
+  reader_fn: &Fn(&mut DocumentReader) -> ReadResult<T>) -> ReadResult<T> {
+  if is_reference_ahead(&mut reader.stream) {
+    let reference = read_reference(&mut reader.stream)?;
+    let original_position = reader.stream.position();
+    let position = reader.map.value.get(&reference).unwrap().clone();
+
+    let _ignored = read_object_id(&mut reader.stream, position)?;
+    let result = reader_fn(reader)?;
+    reader.stream.set_position(original_position);
+
+    Ok(result)
   } else {
-    reader(stream)
+    reader_fn(reader)
   }
 }
 
 
-fn is_reference_ahead(stream: &mut Stream) -> bool {
+pub fn is_reference_ahead(stream: &mut Stream) -> bool {
   let position = stream.position();
 
   skip_whitespace(stream);
 
-  if read_int(stream).is_err() {
-    stream.set_position(position);
-    return false
-  }
-
-  if skip_space(stream).is_err() {
-    stream.set_position(position);
-    return false
-  }
-
-  if read_int(stream).is_err() {
-    stream.set_position(position);
-    return false
-  }
-
-  if skip(stream, " R").is_err() {
-    stream.set_position(position);
-    return false
-  }
+  let is_ok =
+    read_int(stream).is_ok() &&
+    skip_space(stream).is_ok() &&
+    read_int(stream).is_ok() &&
+    skip(stream, " R").is_ok();
 
   stream.set_position(position);
-  return true
+  return is_ok
 }
 
