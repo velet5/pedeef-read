@@ -2,6 +2,9 @@ pub mod integer;
 pub mod name;
 pub mod reference;
 pub mod string;
+pub mod date;
+pub mod rectangle;
+pub mod stream;
 
 use std::collections::HashMap;
 

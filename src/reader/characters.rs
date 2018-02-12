@@ -10,6 +10,8 @@ pub const RIGHT_CURLY_BRACKET: u8 = '}' as u8;
 pub const SOLIDUS: u8 = '/' as u8;
 pub const PERCENT: u8 = '%' as u8;
 
+pub const APOSTROPHE: u8 = '\'' as u8;
+
 pub const NULL: u8 = 0;
 pub const HORIZONTAL_TAB: u8 = 9;
 pub const LINE_FEED: u8 = 10;

@@ -55,5 +55,7 @@ fn read_from_stream(s: Stream) -> ReadResult<()> {
   let root = document::root::read_root(&mut reader, &trailer.root)?;
   println!("{:?}", root);
 
+  let info = document::info::read_info(&mut reader, &trailer.info)?;
+
   Ok(())
 }

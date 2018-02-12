@@ -3,8 +3,11 @@ use std::any::Any;
 use reader::common::*;
 use reader::stream::Stream;
 use reader::result::ReadResult;
+
 use object::reference::*;
 use object::name::*;
+use object::date::*;
+use object::string::*;
 
 use document::reader::DocumentReader;
 
@@ -31,4 +34,14 @@ pub fn read_reference_boxed(reader: &mut DocumentReader) -> ReadResult<Box<Any>>
 
 pub fn read_name_boxed(reader: &mut DocumentReader) -> ReadResult<Box<Any>> {
   boxed(read_name_string(&mut reader.stream))
+}
+
+
+pub fn read_string_boxed(reader: &mut DocumentReader) -> ReadResult<Box<Any>> {
+  boxed(read_pdf_string(&mut reader.stream))
+}
+
+
+pub fn read_date_boxed(reader: &mut DocumentReader) -> ReadResult<Box<Any>> {
+  boxed(read_date(&mut reader.stream))
 }
