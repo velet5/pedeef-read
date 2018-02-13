@@ -25,8 +25,6 @@ pub fn read_dictionary(
       SOLIDUS => {
         let name = read_name_string(&mut reader.stream)?;
 
-        println!("{}", name);
-
         skip_whitespace(&mut reader.stream);
         match map.get(name.as_str()) {
           Some(parser) => {

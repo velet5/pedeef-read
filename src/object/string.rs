@@ -2,14 +2,35 @@ use object::Object;
 use reader::result::ReadResult;
 use reader::stream::Stream;
 use reader::common::*;
+use reader::characters::*;
 
 
 pub fn read_pdf_string(stream: &mut Stream) -> ReadResult<String> {
+  let mut buffer = String::new();
   skip(stream, "(")?;
-  let value = read_regular_string(stream);
-  skip(stream, ")")?;
 
-  Ok(value)
+  let mut open_paren_count = 0;
+
+  loop {
+    match stream.next() {
+      BACKSLASH =>
+        buffer.push(read_char(stream)),
+      LEFT_PARENTHESIS => {
+        open_paren_count += 1;
+        buffer.push(char::from(LEFT_PARENTHESIS));
+      },
+      RIGHT_PARENTHESIS if open_paren_count > 0 => {
+        open_paren_count -= 1;
+        buffer.push(char::from(RIGHT_PARENTHESIS));
+      },
+      RIGHT_PARENTHESIS =>
+        break,
+      other =>
+       buffer.push(char::from(other))
+    }
+  }
+
+  Ok(buffer)
 }
 
 

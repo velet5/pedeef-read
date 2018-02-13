@@ -13,6 +13,7 @@ use reader::common::*;
 use reader::result::ReadResult;
 
 
+#[derive(Debug)]
 pub struct Info {
   title: Option<String>,
   author: Option<String>,

@@ -4,6 +4,7 @@ use reader::stream::Stream;
 use reader::result::ReadResult;
 
 
+#[derive(Debug)]
 pub struct Date {
   year: u16,
   month: Option<u8>,
