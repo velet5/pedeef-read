@@ -1,6 +1,7 @@
 use reader::stream::Stream;
 use reader::result::ReadResult;
 
+#[derive(Debug)]
 pub struct Rectangle {
   left: f32,
   bottom: f32,

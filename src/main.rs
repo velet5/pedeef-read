@@ -58,5 +58,8 @@ fn read_from_stream(s: Stream) -> ReadResult<()> {
   let info = document::info::read_info(&mut reader, &trailer.info)?;
   println!("{:?}", info);
 
+  let pages = document::page::read_pages(&mut reader, &root.pages)?;
+  println!("{:?}", pages);
+
   Ok(())
 }

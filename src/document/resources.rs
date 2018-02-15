@@ -3,8 +3,10 @@ use reader::result::ReadResult;
 use document::reader::DocumentReader;
 
 
+#[derive(Debug)]
 struct Empty;
 
+#[derive(Debug)]
 pub struct Resources {
   ext_g_state: Option<Empty>,
   color_space: Option<Empty>,

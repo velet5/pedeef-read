@@ -28,12 +28,9 @@ pub struct DocumentCatalog {
   page_labels: Option<NumberTree>,
   page_layout: Option<String>,
   page_mode: Option<String>,
-  pages: Reference,
+  pub pages: Reference,
   viewer_preferences: Option<ViewerPreferences>
 }
-
-
-pub struct PageLabels;
 
 
 pub fn read_root(reader: &mut DocumentReader, reference: &Reference) -> ReadResult<DocumentCatalog> {
