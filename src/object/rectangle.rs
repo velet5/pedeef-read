@@ -1,3 +1,4 @@
+use reader::common::*;
 use reader::stream::Stream;
 use reader::result::ReadResult;
 
@@ -11,5 +12,18 @@ pub struct Rectangle {
 
 
 pub fn read_rectangle(stream: &mut Stream) -> ReadResult<Rectangle> {
-  unimplemented!()
+  skip_whitespace(stream);
+  skip(stream, "[")?;
+  skip_whitespace(stream);
+
+  let left = read_float(stream)?;
+  let bottom = read_float(stream)?;
+  let right = read_float(stream)?;
+  let top = read_float(stream)?;
+
+  skip_whitespace(stream);
+  skip(stream, "]")?;
+  skip_whitespace(stream);
+
+  Ok(Rectangle {left, bottom, right, top})
 }

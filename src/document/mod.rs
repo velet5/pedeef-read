@@ -2,6 +2,7 @@ mod boxed;
 
 pub mod contents;
 pub mod dictionary;
+pub mod group;
 pub mod info;
 pub mod map;
 pub mod number_tree;

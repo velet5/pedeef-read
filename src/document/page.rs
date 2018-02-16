@@ -9,12 +9,13 @@ use object::reference::*;
 use object::*;
 use object::date::Date;
 use object::name::*;
-use object::rectangle::Rectangle;
+use object::rectangle::*;
 
 use document::map::*;
+use document::group::*;
 use document::boxed::*;
 use document::dictionary::*;
-use document::resources::Resources;
+use document::resources::*;
 use document::contents::Contents;
 use document::reader::DocumentReader;
 
@@ -36,7 +37,7 @@ struct PageLike {
   trim_box: Option<Rectangle>,
   art_box: Option<Rectangle>,
   box_color_info: Option<Empty>,
-  contents: Option<Stream>,
+  contents: Option<Reference>,
   rotate: Option<i32>,
   group: Option<Empty>,
   thumb: Option<Stream>,
@@ -62,7 +63,7 @@ struct PageLike {
 #[derive(Debug)]
 pub enum Node {
   List(PageList),
-  Pages(Vec<Page>)
+  Page(Page)
 }
 
 
@@ -71,14 +72,14 @@ pub struct Page {
   tpe: String,
   parent: Option<Reference>,
   last_modified: Option<Date>,
-  resources: Resources,
-  media_box: Rectangle,
+  resources: Option<Resources>,
+  media_box: Option<Rectangle>,
   crop_box: Option<Rectangle>,
   bleed_box: Option<Rectangle>,
   trim_box: Option<Rectangle>,
   art_box: Option<Rectangle>,
   box_color_info: Option<Empty>,
-  contents: Option<Stream>,
+  contents: Option<Reference>,
   rotate: Option<i32>,
   group: Option<Empty>,
   thumb: Option<Stream>,
@@ -122,9 +123,40 @@ impl PageLike {
   }
 
 
-  pub fn as_page(&self) -> Option<Page> {
+  pub fn as_page(self) -> Option<Page> {
     if self.is_page() {
-      unimplemented!()
+      Some(Page {
+        tpe: self.tpe,
+        parent: self.parent,
+        last_modified: self.last_modified,
+        resources: self.resources,
+        media_box: self.media_box,
+        crop_box: self.crop_box,
+        bleed_box: self.bleed_box,
+        trim_box: self.trim_box,
+        art_box: self.art_box,
+        box_color_info: self.box_color_info,
+        contents: self.contents,
+        rotate: self.rotate,
+        group: self.group,
+        thumb: self.thumb,
+        b: self.b,
+        dur: self.dur,
+        trans: self.trans,
+        annots: self.annots,
+        aa: self.aa,
+        metadata: self.metadata,
+        piece_info: self.piece_info,
+        struct_parents: self.struct_parents,
+        id: self.id,
+        pz: self.pz,
+        separation_info: self.separation_info,
+        tabs: self.tabs,
+        template_instantiated: self.template_instantiated,
+        pres_steps: self.pres_steps,
+        user_unit: self.user_unit,
+        vp: self.vp,
+      })
     } else {
       None
     }
@@ -171,6 +203,14 @@ fn read_node(reader: &mut DocumentReader, reference: &Reference) -> ReadResult<N
   map.insert("Count", &read_int_boxed);
   map.insert("Kids", &read_kids_reference_array_boxed);
   map.insert("Parent", &read_reference_boxed);
+  map.insert("Contents", &read_reference_boxed);
+  map.insert("MediaBox", &read_rectangle_boxed);
+  map.insert("CropBox", &read_rectangle_boxed);
+  map.insert("BleedBox", &read_rectangle_boxed);
+  map.insert("TrimBox", &read_rectangle_boxed);
+  map.insert("ArtBox", &read_rectangle_boxed);
+  map.insert("Group", &read_group_boxed);
+  map.insert("Resources", &read_resources_boxed);
   //parent
   //kids
   //count
@@ -254,7 +294,8 @@ fn read_node(reader: &mut DocumentReader, reference: &Reference) -> ReadResult<N
 
     Ok(Node::List(list))
   } else {
-    unimplemented!()
+    let mut page = page_like.as_page().unwrap();
+    Ok(Node::Page(page))
   }
 }
 

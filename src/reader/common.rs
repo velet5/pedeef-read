@@ -2,6 +2,7 @@ use reader::characters::*;
 use reader::stream::Stream;
 use reader::result::ReadResult;
 use std::num::ParseIntError;
+use std::num::ParseFloatError;
 use reader::error::ReadError;
 
 const F: u8 = 'f' as u8;
@@ -60,6 +61,25 @@ pub fn read_int(stream: &mut Stream) -> ReadResult<i32> {
       ReadError {
         message: format!("Error: {}. Position: {}", err.to_string(), stream.position())
       })
+}
+
+
+pub fn read_float(stream: &mut Stream) -> ReadResult<f32> {
+  skip_whitespace(stream);
+
+  let mut buffer = String::new();
+  loop {
+    let peek = stream.peek();
+
+    if is_digit(peek) || peek == DOT || peek == HYPHEN {
+      let ch = read_char(stream);
+      buffer.push(ch);
+    } else {
+      break;
+    }
+  }
+
+  buffer.parse().map_err(|err: ParseFloatError| ReadError { message: err.to_string() })
 }
 
 
