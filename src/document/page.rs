@@ -12,6 +12,7 @@ use object::name::*;
 use object::rectangle::*;
 
 use document::map::*;
+use document::contents::*;
 use document::group::*;
 use document::boxed::*;
 use document::dictionary::*;
@@ -37,9 +38,9 @@ struct PageLike {
   trim_box: Option<Rectangle>,
   art_box: Option<Rectangle>,
   box_color_info: Option<Empty>,
-  contents: Option<Reference>,
+  contents_reference: Option<Reference>,
   rotate: Option<i32>,
-  group: Option<Empty>,
+  group: Option<Group>,
   thumb: Option<Stream>,
   b: Option<Vec<Reference>>,
   dur: Option<f32>,
@@ -79,9 +80,9 @@ pub struct Page {
   trim_box: Option<Rectangle>,
   art_box: Option<Rectangle>,
   box_color_info: Option<Empty>,
-  contents: Option<Reference>,
+  contents_reference: Option<Reference>,
   rotate: Option<i32>,
-  group: Option<Empty>,
+  group: Option<Group>,
   thumb: Option<Stream>,
   b: Option<Vec<Reference>>,
   dur: Option<f32>,
@@ -136,7 +137,7 @@ impl PageLike {
         trim_box: self.trim_box,
         art_box: self.art_box,
         box_color_info: self.box_color_info,
-        contents: self.contents,
+        contents_reference: self.contents_reference,
         rotate: self.rotate,
         group: self.group,
         thumb: self.thumb,
@@ -192,7 +193,7 @@ pub fn read_pages(reader: &mut DocumentReader, reference: &Reference) -> ReadRes
 
 
 fn read_node(reader: &mut DocumentReader, reference: &Reference) -> ReadResult<Node> {
-  let position = reader.map.value.get(reference).unwrap().clone();
+  let position = reader.map.get(reference).unwrap().clone();
   let _ignored = read_object_id(&mut reader.stream, position)?;
   skip_whitespace(&mut reader.stream);
 
@@ -211,37 +212,6 @@ fn read_node(reader: &mut DocumentReader, reference: &Reference) -> ReadResult<N
   map.insert("ArtBox", &read_rectangle_boxed);
   map.insert("Group", &read_group_boxed);
   map.insert("Resources", &read_resources_boxed);
-  //parent
-  //kids
-  //count
-  //last_modified
-  //resources
-  //media_box
-  //crop_box
-  //bleed_box
-  //trim_box
-  //art_box
-  //box_color_info
-  //contents <----
-  //rotate
-  //group
-  //thumb
-  //b
-  //dur
-  //trans
-  //annots
-  //aa
-  //metadata
-  //piece_info
-  //struct_parents
-  //id
-  //pz
-  //separation_info
-  //tabs
-  //template_instantiated
-  //pres_steps
-  //user_unit
-  //vp
 
   let dictionary = &mut read_dictionary(reader, &mut map)?;
 
@@ -249,6 +219,14 @@ fn read_node(reader: &mut DocumentReader, reference: &Reference) -> ReadResult<N
   let count = *unfold_optional("Count", dictionary)?;
   let kids = *unfold_optional("Kids", dictionary)?;
   let parent = *unfold_optional("Parent", dictionary)?;
+  let contents_reference = *unfold_optional("Contents", dictionary)?;
+  let media_box = *unfold_optional("MediaBox", dictionary)?;
+  let crop_box = *unfold_optional("CropBox", dictionary)?;
+  let bleed_box = *unfold_optional("BleedBox", dictionary)?;
+  let trim_box = *unfold_optional("TrimBox", dictionary)?;
+  let art_box = *unfold_optional("ArtBox", dictionary)?;
+  let group = *unfold_optional("Group", dictionary)?;
+  let resources = *unfold_optional("Resources", dictionary)?;
 
   let page_like = PageLike {
     tpe,
@@ -256,16 +234,16 @@ fn read_node(reader: &mut DocumentReader, reference: &Reference) -> ReadResult<N
     kids,
     count,
     last_modified: None,
-    resources: None,
-    media_box: None,
-    crop_box: None,
-    bleed_box: None,
-    trim_box: None,
-    art_box: None,
+    resources,
+    media_box,
+    crop_box,
+    bleed_box,
+    trim_box,
+    art_box,
     box_color_info: None,
-    contents: None,
+    contents_reference,
     rotate: None,
-    group: None,
+    group,
     thumb: None,
     b: None,
     dur: None,
@@ -295,6 +273,11 @@ fn read_node(reader: &mut DocumentReader, reference: &Reference) -> ReadResult<N
     Ok(Node::List(list))
   } else {
     let mut page = page_like.as_page().unwrap();
+
+    if let Some(ref reference) = page.contents_reference {
+      let contents = read_content(reader, &reference)?;
+    }
+
     Ok(Node::Page(page))
   }
 }

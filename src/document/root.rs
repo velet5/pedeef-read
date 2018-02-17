@@ -37,7 +37,7 @@ pub fn read_root(reader: &mut DocumentReader, reference: &Reference) -> ReadResu
   {
     let stream = &mut reader.stream;
     stream.set_forward_mode();
-    let offset = reader.map.value.get(reference).unwrap();
+    let offset = reader.map.get(reference).unwrap();
     let _ignored = read_object_id(stream, *offset)?;
     skip_whitespace(stream);
   }

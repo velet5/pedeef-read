@@ -7,6 +7,7 @@ use document::reader::DocumentReader;
 use document::boxed::*;
 use document::dictionary::*;
 
+#[derive(Debug)]
 pub struct Group {
   tpe: String,
   subtype: String,

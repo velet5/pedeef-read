@@ -28,7 +28,7 @@ pub struct Info {
 
 
 pub fn read_info(reader: &mut DocumentReader, reference: &Reference) -> ReadResult<Info> {
-  let position = reader.map.value.get(reference).unwrap().clone();
+  let position = reader.map.get(reference).unwrap().clone();
   let _ignored = read_object_id(&mut reader.stream, position)?;
   skip_whitespace(&mut reader.stream);
 

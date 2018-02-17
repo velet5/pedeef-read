@@ -7,10 +7,7 @@ use reader::result::ReadResult;
 use reader::stream::Stream;
 
 
-#[derive(Debug)]
-pub struct ObjectMap {
-  pub value: HashMap<Reference, usize>
-}
+pub type ObjectMap = HashMap<Reference, usize>;
 
 
 pub fn read_object_map(stream: &mut Stream, xref: &XrefTable) -> ReadResult<ObjectMap> {
@@ -23,7 +20,7 @@ pub fn read_object_map(stream: &mut Stream, xref: &XrefTable) -> ReadResult<Obje
     }
   }
 
-  Ok(ObjectMap { value: map })
+  Ok(map)
 }
 
 
