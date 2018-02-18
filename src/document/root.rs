@@ -29,6 +29,7 @@ pub struct DocumentCatalog {
   page_layout: Option<String>,
   page_mode: Option<String>,
   pub pages: Reference,
+  metadata: Option<Reference>,
   viewer_preferences: Option<ViewerPreferences>
 }
 
@@ -50,6 +51,7 @@ pub fn read_root(reader: &mut DocumentReader, reference: &Reference) -> ReadResu
   map.insert("PageLayout", &read_name_boxed);
   map.insert("PageMode", &read_name_boxed);
   map.insert("Pages", &read_reference_boxed);
+  map.insert("Metadata", &read_reference_boxed);
   map.insert("ViewerPreferences", &read_viewer_preferences_boxed);
 
   let dictionary = &mut read_dictionary(reader, &map)?;
@@ -59,6 +61,7 @@ pub fn read_root(reader: &mut DocumentReader, reference: &Reference) -> ReadResu
   let page_labels = *unfold_optional("PageLabels", dictionary)?;
   let page_layout = *unfold_optional("PageLayout", dictionary)?;
   let page_mode = *unfold_optional("PageMode", dictionary)?;
+  let metadata = *unfold_optional("Metadata", dictionary)?;
   let pages = *unfold("Pages", dictionary)?;
   let viewer_preferences = *unfold_optional("ViewerPreferences", dictionary)?;
 
@@ -69,6 +72,7 @@ pub fn read_root(reader: &mut DocumentReader, reference: &Reference) -> ReadResu
     page_layout,
     page_mode,
     pages,
+    metadata,
     viewer_preferences
   })
 }
@@ -80,4 +84,4 @@ fn read_page_labels(reader: &mut DocumentReader) -> ReadResult<Box<Any>> {
   let number_tree = read_unfold_reference(reader, &read_number_tree)?;
 
   Ok(Box::new(number_tree))
-}
+}                  

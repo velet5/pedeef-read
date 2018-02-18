@@ -17,6 +17,8 @@ pub fn read_unfold_reference<T>(
     let position = reader.map.get(&reference).unwrap().clone();
 
     let _ignored = read_object_id(&mut reader.stream, position)?;
+    skip_whitespace(&mut reader.stream);
+    
     let result = reader_fn(reader)?;
     reader.stream.set_position(original_position);
 

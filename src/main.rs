@@ -1,6 +1,7 @@
 mod reader;
 mod object;
 mod document;
+mod construct;
 
 use document::reader::DocumentReader;
 

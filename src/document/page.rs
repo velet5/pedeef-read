@@ -99,7 +99,8 @@ pub struct Page {
   template_instantiated: Option<String>,
   pres_steps: Option<Empty>,
   user_unit: Option<f32>,
-  vp: Option<Empty>
+  vp: Option<Empty>,
+  contents: Option<Contents>
 }
 
 
@@ -157,6 +158,7 @@ impl PageLike {
         pres_steps: self.pres_steps,
         user_unit: self.user_unit,
         vp: self.vp,
+        contents: None
       })
     } else {
       None
@@ -199,7 +201,6 @@ fn read_node(reader: &mut DocumentReader, reference: &Reference) -> ReadResult<N
 
   let mut map: HashMap<&str, &Fn(&mut DocumentReader) -> ReadResult<Box<Any>>> = HashMap::new();
 
-  //tpe
   map.insert("Type", &read_name_boxed);
   map.insert("Count", &read_int_boxed);
   map.insert("Kids", &read_kids_reference_array_boxed);
@@ -276,6 +277,7 @@ fn read_node(reader: &mut DocumentReader, reference: &Reference) -> ReadResult<N
 
     if let Some(ref reference) = page.contents_reference {
       let contents = read_content(reader, &reference)?;
+      page.contents = Some(contents)
     }
 
     Ok(Node::Page(page))

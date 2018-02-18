@@ -24,7 +24,7 @@ pub fn read_dictionary(
     match reader.stream.peek() {
       SOLIDUS => {
         let name = read_name_string(&mut reader.stream)?;
-
+        
         skip_whitespace(&mut reader.stream);
         match map.get(name.as_str()) {
           Some(parser) => {
@@ -37,7 +37,9 @@ pub fn read_dictionary(
             })
         }
       },
-      GREATER_THAN => break,
+      GREATER_THAN => {
+        break
+      },
       other if is_whitespace(other) => skip_whitespace(&mut reader.stream),
       unknown => return Err(ReadError {
         message: format!("Unknown character in trailer: {}. Position: {}", unknown, &reader.stream.position())
@@ -45,6 +47,7 @@ pub fn read_dictionary(
     }
   }
 
+  skip(&mut reader.stream, ">>")?;
   Ok(buffer)
 }
 

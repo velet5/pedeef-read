@@ -13,6 +13,7 @@ use object::reference::*;
 
 use document::boxed::*;
 use document::dictionary::*;
+use document::referenced::*;
 use document::reader::DocumentReader;
 
 use self::graphical_state::*;
@@ -25,9 +26,9 @@ struct Empty;
 
 #[derive(Debug)]
 pub struct Resources {
-  ext_g_state: Option<HashMap<String, Reference>>,
+  ext_g_state: Option<HashMap<String, GraphicalState>>,
   color_space: Option<Empty>,
-  pattern: Option<Empty>,
+  pattern: Option<HashMap<String, Reference>>,
   shading: Option<Empty>,
   x_object: Option<Empty>,
   font: Option<HashMap<String, Reference>>,
@@ -42,18 +43,21 @@ pub fn read_resources(reader: &mut DocumentReader) -> ReadResult<Resources> {
 
   map.insert("Font", &read_name_reference_map_boxed);
   map.insert("ProcSet", &read_name_array_boxed);
-  map.insert("ExtGState", &read_name_reference_map_boxed);
+  map.insert("ExtGState", &read_name_graphical_state_map_boxed);
+  map.insert("Pattern", &read_name_reference_map_boxed);
+  map.insert("Type", &read_name_boxed);
 
   let dictionary = &mut read_dictionary(reader, &map)?;
 
   let font = *unfold_optional("Font", dictionary)?;
   let proc_set = *unfold_optional("ProcSet", dictionary)?;
   let ext_g_state = *unfold_optional("ExtGState", dictionary)?;
+  let pattern = *unfold_optional("Pattern", dictionary)?;
 
   Ok(Resources {
     ext_g_state,
     color_space: None,
-    pattern: None,
+    pattern,
     shading: None,
     x_object: None,
     font,
@@ -63,12 +67,41 @@ pub fn read_resources(reader: &mut DocumentReader) -> ReadResult<Resources> {
 }
 
 pub fn read_resources_boxed(reader: &mut DocumentReader) -> ReadResult<Box<Any>> {
-  boxed(read_resources(reader))
+  boxed(read_unfold_reference(reader, &read_resources))
 }
 
 
 fn read_name_reference_map_boxed(reader: &mut DocumentReader) -> ReadResult<Box<Any>> {
   boxed(read_name_reference_map(reader))
+}
+
+
+fn read_name_graphical_state_map(reader: &mut DocumentReader) -> ReadResult<HashMap<String, GraphicalState>> {
+  skip_whitespace(&mut reader.stream);
+  skip(&mut reader.stream, "<<")?;
+  skip_whitespace(&mut reader.stream);
+
+  let mut buffer = HashMap::new();
+
+  while reader.stream.peek() != GREATER_THAN {
+    let name = read_name_string(&mut reader.stream)?;
+    skip_whitespace(&mut reader.stream);
+
+    let graphical_state = read_unfold_reference(reader, &read_graphical_state)?;
+    skip_whitespace(&mut reader.stream);
+
+    buffer.insert(name, graphical_state);
+  }
+
+  skip(&mut reader.stream, ">>")?;
+  skip_whitespace(&mut reader.stream);
+
+  Ok(buffer)
+}
+
+
+fn read_name_graphical_state_map_boxed(reader: &mut DocumentReader) -> ReadResult<Box<Any>> {
+  boxed(read_name_graphical_state_map(reader))
 }
 
 
