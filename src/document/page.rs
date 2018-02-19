@@ -100,7 +100,7 @@ pub struct Page {
   pres_steps: Option<Empty>,
   user_unit: Option<f32>,
   vp: Option<Empty>,
-  contents: Option<Contents>
+  pub contents: Option<Contents>
 }
 
 
@@ -110,7 +110,7 @@ pub struct PageList {
   parent: Option<Reference>,
   kids: Vec<Reference>,
   count: i32,
-  nodes: Vec<Node>
+  pub nodes: Vec<Node>
 }
 
 

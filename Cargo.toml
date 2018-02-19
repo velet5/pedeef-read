@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["Oleg Arshinskii <velet5@ya.ru>"]
 
 [dependencies]
+flate2 = "0.2"

@@ -3,6 +3,8 @@ use std::any::Any;
 use std::collections::HashMap;
 
 use reader::common::*;
+use reader::characters::*;
+use reader::stream::Stream;
 use reader::result::ReadResult;
 
 use object::Reference;
@@ -17,8 +19,8 @@ use document::referenced::*;
 
 #[derive(Debug)]
 pub struct Contents {
-  filter: Filter,
-  bytes: Vec<u8>
+  pub filter: Filter,
+  pub bytes: Vec<u8>
 }
 
 
@@ -75,7 +77,14 @@ fn read_bytes(reader: &mut DocumentReader, length: i32) -> ReadResult<Vec<u8>> {
   let stream = &mut reader.stream;
   skip_whitespace(stream);
   skip(stream, "stream")?;
-  let _ignored = stream.next();
+
+  fn skip_new_line(stream: &mut Stream) -> () {
+    while stream.peek() == LINE_FEED || stream.peek() == CARRIAGE_RETURN {
+      let _ignored = stream.next();
+    }
+  }
+
+  skip_new_line(stream);
 
   let mut buffer = Vec::with_capacity(length as usize);
 

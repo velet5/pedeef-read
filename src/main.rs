@@ -1,3 +1,5 @@
+extern crate flate2;
+
 mod reader;
 mod object;
 mod document;
@@ -7,7 +9,7 @@ use document::reader::DocumentReader;
 
 use reader::stream::Stream;
 use reader::result::ReadResult;
-
+use construct::page::Page;
 
 
 fn main() {
@@ -17,7 +19,13 @@ fn main() {
   println!("====================================");
   println!();
 
-  read_file("/home/oarshinskii/worktime-2018-02-01.pdf")
+  read_file("/home/oarshinskii/worktime-2018-02-01.pdf");
+
+  println!();
+  println!("====================================");
+  println!();
+
+  read_file("/home/oarshinskii/example-russian.pdf");
 }
 
 
@@ -42,25 +50,22 @@ fn read_from_stream(s: Stream) -> ReadResult<()> {
 
   let xref = document::xref::read_xref(&mut stream)?;
   let position = stream.position();
-  println!("{:?}", xref);
-
   let object_map = document::map::read_object_map(&mut stream, &xref)?;
-  println!("{:?}", object_map);
-
   stream.set_position(position);
   let mut reader = DocumentReader {stream, map: object_map};
 
   let trailer = document::trailer::read_trailer(&mut reader)?;
-  println!("{:?}", trailer);
-
   let root = document::root::read_root(&mut reader, &trailer.root)?;
-  println!("{:?}", root);
-
   let info = document::info::read_info(&mut reader, &trailer.info)?;
-  println!("{:?}", info);
+  let page_list = document::page::read_pages(&mut reader, &root.pages)?;
 
-  let pages = document::page::read_pages(&mut reader, &root.pages)?;
-  println!("{:?}", pages);
+  let pages = Page::from_pdf_page_list(&page_list);
+
+  let mut i = 0;
+  for page in pages {
+    i += 1;
+    print!("{} ", i)
+  }
 
   Ok(())
 }
