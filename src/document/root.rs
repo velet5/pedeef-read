@@ -30,7 +30,8 @@ pub struct DocumentCatalog {
   page_mode: Option<String>,
   pub pages: Reference,
   metadata: Option<Reference>,
-  viewer_preferences: Option<ViewerPreferences>
+  viewer_preferences: Option<ViewerPreferences>,
+  lang: Option<String>
 }
 
 
@@ -53,6 +54,7 @@ pub fn read_root(reader: &mut DocumentReader, reference: &Reference) -> ReadResu
   map.insert("Pages", &read_reference_boxed);
   map.insert("Metadata", &read_reference_boxed);
   map.insert("ViewerPreferences", &read_viewer_preferences_boxed);
+  map.insert("Lang", &read_string_boxed);
 
   let dictionary = &mut read_dictionary(reader, &map)?;
 
@@ -64,6 +66,7 @@ pub fn read_root(reader: &mut DocumentReader, reference: &Reference) -> ReadResu
   let metadata = *unfold_optional("Metadata", dictionary)?;
   let pages = *unfold("Pages", dictionary)?;
   let viewer_preferences = *unfold_optional("ViewerPreferences", dictionary)?;
+  let lang = *unfold_optional("Lang", dictionary)?;
 
   Ok(DocumentCatalog {
     tpe,
@@ -73,7 +76,8 @@ pub fn read_root(reader: &mut DocumentReader, reference: &Reference) -> ReadResu
     page_mode,
     pages,
     metadata,
-    viewer_preferences
+    viewer_preferences,
+    lang
   })
 }
 

@@ -18,7 +18,8 @@ use document::reader::DocumentReader;
 pub struct Trailer {
   pub size: i32,
   pub root: Reference,
-  pub info: Reference
+  pub info: Reference,
+  pub checksum: Option<String>
 }
 
 
@@ -26,12 +27,12 @@ pub fn read_trailer(reader: &mut DocumentReader)  -> ReadResult<Trailer> {
 
   let mut trailer_map: HashMap<&str, &Fn(&mut DocumentReader) -> ReadResult<Box<Any>>> = HashMap::new();
 
-
   trailer_map.insert("Size", &read_int_boxed);
   trailer_map.insert("Prev", &read_int_boxed);
   trailer_map.insert("Root", &read_reference_boxed);
   trailer_map.insert("Info", &read_reference_boxed);
   trailer_map.insert("ID", &read_id_array);
+  trailer_map.insert("DocChecksum", &read_name_boxed);
 
   {
     let stream = &mut reader.stream;
@@ -42,15 +43,12 @@ pub fn read_trailer(reader: &mut DocumentReader)  -> ReadResult<Trailer> {
 
   let dictionary = &mut read_dictionary(reader, &trailer_map)?;
 
-  let size = unfold::<i32>("Size", dictionary)?;
-  let root = unfold::<Reference>("Root", dictionary)?;
-  let info = unfold::<Reference>("Info", dictionary)?;
+  let size = *unfold("Size", dictionary)?;
+  let root = *unfold("Root", dictionary)?;
+  let info = *unfold("Info", dictionary)?;
+  let checksum = *unfold_optional("DocChecksum", dictionary)?;
 
-  Ok(Trailer {
-    size: *size,
-    root: *root,
-    info: *info
-  })
+  Ok(Trailer { size, root, info, checksum })
 }
 
                                                                                    

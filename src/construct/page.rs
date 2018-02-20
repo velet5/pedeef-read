@@ -1,3 +1,4 @@
+use std::ascii;
 use std::io::{self, Read};
 
 use std::io::prelude::*;
@@ -41,10 +42,10 @@ impl Page {
     let bytes =
       match source.contents {
         Some(ref contents) => {
-          let mut d = ZlibDecoder::new(&contents.bytes[..]);
-          let mut s = Vec::new();
-          d.read_to_end(&mut s).unwrap();
-          s
+          let mut decoder = ZlibDecoder::new(&contents.bytes[..]);
+          let mut buffer = Vec::new();
+          decoder.read_to_end(&mut buffer).unwrap();
+          buffer
         }
         None => {
           Vec::new()

@@ -1,12 +1,30 @@
 use object::Object;
 use reader::result::ReadResult;
+use reader::error::ReadError;
 use reader::stream::Stream;
 use reader::common::*;
 use reader::characters::*;
 
 
 pub fn read_pdf_string(stream: &mut Stream) -> ReadResult<String> {
+  skip_whitespace(stream);
+
+  match stream.peek() {
+    LEFT_PARENTHESIS =>
+      read_as_is_string(stream),
+    LESS_THAN =>
+      read_byte_string(stream),
+    other =>
+      Err(ReadError{ message :
+        format!("Unknown string beginning: {}. Position: {}", char::from(other), stream.position())
+      })
+  }
+}
+
+
+fn read_as_is_string(stream: &mut Stream) -> ReadResult<String> {
   let mut buffer = String::new();
+
   skip(stream, "(")?;
 
   let mut open_paren_count = 0;
@@ -26,7 +44,7 @@ pub fn read_pdf_string(stream: &mut Stream) -> ReadResult<String> {
       RIGHT_PARENTHESIS =>
         break,
       other =>
-       buffer.push(char::from(other))
+        buffer.push(char::from(other))
     }
   }
 

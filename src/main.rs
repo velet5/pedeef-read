@@ -26,6 +26,13 @@ fn main() {
   println!();
 
   read_file("/home/oarshinskii/example-russian.pdf");
+
+  println!();
+  println!("====================================");
+  println!();
+
+  read_file("/home/oarshinskii/gist.pdf");
+
 }
 
 
